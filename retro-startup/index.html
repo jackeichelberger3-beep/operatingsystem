@@ -26,7 +26,10 @@
   </div>
 
   <div class="desktop hidden" id="desktop" tabindex="0">
-    <div class="taskbar">Start</div>
+    <div class="taskbar">
+      <div class="taskbar-left">Start</div>
+      <div class="taskbar-windows" id="taskbar-windows"></div>
+    </div>
 
     <div class="desktop-content">
       <div class="desktop-icons">
@@ -57,10 +60,35 @@
       </div>
 
       <h1>Welcome</h1>
-      <p>Double-click an icon (single click also works) to open the mock OS apps. Open Executables to run sample .exe files.</p>
+      <p>Double-click an icon to open the mock OS apps. Open Executables to run sample .exe files.</p>
     </div>
 
     <div id="windows"></div>
+  </div>
+
+  <!-- BIOS setup modal (hidden until invoked) -->
+  <div class="modal hidden" id="bios-setup">
+    <div class="modal-content">
+      <h2>BIOS Setup Utility</h2>
+      <div class="form-row"><label>Boot Device:</label>
+        <select id="setup-boot-device"><option>Hard Disk</option><option>Floppy</option><option>CD-ROM</option></select>
+      </div>
+      <div class="form-row"><label>System Date:</label><input id="setup-date" value="2026-08-17"></div>
+      <div class="form-actions"><button id="bios-save">Save</button><button id="bios-exit">Exit</button></div>
+    </div>
+  </div>
+
+  <!-- Boot menu modal -->
+  <div class="modal hidden" id="boot-menu">
+    <div class="modal-content">
+      <h2>Boot Menu</h2>
+      <ul class="boot-list">
+        <li class="boot-choice" data-choice="Hard Disk">Hard Disk</li>
+        <li class="boot-choice" data-choice="Floppy">Floppy</li>
+        <li class="boot-choice" data-choice="CD-ROM">CD-ROM</li>
+      </ul>
+      <div class="form-actions"><button id="bootmenu-cancel">Cancel</button></div>
+    </div>
   </div>
 
   <script src="script.js"></script>

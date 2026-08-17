@@ -1,4 +1,4 @@
-/* BIOS + Retro Windows 95 style */
+/* BIOS + Retro Windows 95 style + taskbar & windows */
 :root{
   --bg:#008080; /* teal-ish boot background */
   --panel:#c0c0c0;
@@ -22,7 +22,13 @@ html,body{height:100%;margin:0}
 .post-log{background:#000;color:#0f0;padding:12px;border:1px solid #033;font-family:monospace;height:220px;overflow:auto}
 .bios-hint{color:#666;margin-top:8px;font-size:13px}
 
-.boot-screen.hidden, .bios-screen.hidden{display:none}
+/* modals */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center}
+.modal .modal-content{background:#fff;padding:18px;border-radius:6px;min-width:320px}
+.form-row{margin:8px 0;display:flex;gap:8px;align-items:center}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+.bios-screen.hidden, .boot-screen.hidden, .modal.hidden{display:none}
 
 .boot-screen{
   height:100vh;
@@ -63,10 +69,15 @@ html,body{height:100%;margin:0}
   border-top:3px solid #777;
   display:flex;
   align-items:center;
-  padding:0 12px;
+  padding:0 6px;
   font-weight:700;
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.8);
 }
+.taskbar-left{margin-right:12px}
+.taskbar-windows{display:flex;gap:6px;align-items:center}
+.taskbar-btn{background:#e6e6e6;border:1px solid #777;padding:6px 10px;border-radius:3px;cursor:pointer}
+.taskbar-btn.minimized{opacity:0.6}
+
 .desktop-content{padding:32px}
 
 /* desktop icons */
@@ -90,6 +101,7 @@ html,body{height:100%;margin:0}
   margin:0 auto 6px;
   filter:drop-shadow(0 1px 0 rgba(0,0,0,0.4));
 }
+.desktop-icon.selected{outline:2px solid rgba(255,255,255,0.2);border-radius:6px}
 
 /* windows */
 #windows { position: absolute; inset:0; pointer-events:none; }
