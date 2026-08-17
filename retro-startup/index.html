@@ -16,12 +16,37 @@
     <img src="reference/logos/manufacturer_logo.svg" alt="OEM" class="oem">
   </div>
 
-  <div class="desktop hidden" id="desktop">
+  <div class="desktop hidden" id="desktop" tabindex="0">
     <div class="taskbar">Start</div>
+
     <div class="desktop-content">
+      <div class="desktop-icons">
+        <div class="desktop-icon" data-app="my-computer" title="My Computer">
+          <img src="reference/logos/my_computer.svg" alt="My Computer">
+          <div>My Computer</div>
+        </div>
+
+        <div class="desktop-icon" data-app="notepad" title="Notepad">
+          <img src="reference/logos/notepad.svg" alt="Notepad">
+          <div>Notepad</div>
+        </div>
+
+        <div class="desktop-icon" data-app="browser" title="Internet">
+          <img src="reference/logos/browser.svg" alt="Internet">
+          <div>Internet</div>
+        </div>
+
+        <div class="desktop-icon" data-app="recycle" title="Recycle Bin">
+          <img src="reference/logos/recycle.svg" alt="Recycle">
+          <div>Recycle Bin</div>
+        </div>
+      </div>
+
       <h1>Welcome</h1>
-      <p>This is a retro Windows 95 startup demo. Replace the images in reference/logos/ to customize the logos and drop a startup sound into reference/sounds/ if you want audio.</p>
+      <p>Double-click an icon (single click also works) to open the mock OS apps.</p>
     </div>
+
+    <div id="windows"></div>
   </div>
 
   <script src="script.js"></script>

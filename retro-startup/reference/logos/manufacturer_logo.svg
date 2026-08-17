@@ -1,0 +1,5 @@
+<!-- Small OEM placeholder (replaceable) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="60" viewBox="0 0 220 60">
+  <rect width="220" height="60" fill="#222" rx="6"/>
+  <text x="12" y="38" fill="#fff" font-family="sans-serif" font-weight="700">OEM NAME</text>
+</svg>

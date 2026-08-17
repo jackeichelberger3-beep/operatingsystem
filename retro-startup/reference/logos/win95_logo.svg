@@ -1,0 +1,11 @@
+<!-- Simple, replaceable placeholder logo inspired by retro style -->
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200" viewBox="0 0 600 200">
+  <rect width="600" height="200" fill="#008080"/>
+  <g transform="translate(40,30)" fill="#fff" font-family="sans-serif" font-weight="700">
+    <rect x="0" y="0" width="120" height="120" fill="#ff3b3b"/>
+    <rect x="140" y="0" width="120" height="120" fill="#ffd23b"/>
+    <rect x="280" y="0" width="120" height="120" fill="#3bff6a"/>
+    <rect x="420" y="0" width="120" height="120" fill="#3b8bff"/>
+    <text x="0" y="160" font-size="30" fill="#fff">Retro OS</text>
+  </g>
+</svg>
