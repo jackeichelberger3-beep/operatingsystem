@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Retro Windows 95 Startup</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="boot-screen" id="boot">
+    <img src="reference/logos/win95_logo.svg" alt="Logo" class="logo">
+    <div class="text">Starting Microsoft Windows 95...</div>
+    <div class="progress">
+      <div class="bar" id="bar"></div>
+    </div>
+    <img src="reference/logos/manufacturer_logo.svg" alt="OEM" class="oem">
+  </div>
+
+  <div class="desktop hidden" id="desktop">
+    <div class="taskbar">Start</div>
+    <div class="desktop-content">
+      <h1>Welcome</h1>
+      <p>This is a retro Windows 95 startup demo. Replace the images in reference/logos/ to customize the logos and drop a startup sound into reference/sounds/ if you want audio.</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
