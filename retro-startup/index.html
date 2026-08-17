@@ -27,7 +27,7 @@
 
   <div class="desktop hidden" id="desktop" tabindex="0">
     <div class="taskbar">
-      <div class="taskbar-left">Start</div>
+      <button id="start-button" class="start-button"><img src="reference/logos/start_logo.svg" alt="Start" class="start-icon"> Start</button>
       <div class="taskbar-windows" id="taskbar-windows"></div>
     </div>
 
@@ -49,7 +49,7 @@
         </div>
 
         <div class="desktop-icon" data-app="executables" title="Executables">
-          <img src="reference/logos/my_computer.svg" alt="Executables">
+          <img src="reference/logos/console.svg" alt="Executables">
           <div>Executables</div>
         </div>
 
@@ -60,10 +60,21 @@
       </div>
 
       <h1>Welcome</h1>
-      <p>Double-click an icon to open the mock OS apps. Open Executables to run sample .exe files.</p>
+      <p>Single-click an icon to select, double-click to open. Use the Start menu or taskbar to manage windows.</p>
     </div>
 
     <div id="windows"></div>
+  </div>
+
+  <!-- Start menu -->
+  <div class="start-menu hidden" id="start-menu">
+    <ul>
+      <li data-app="my-computer"><img src="reference/logos/my_computer.svg" alt=""> My Computer</li>
+      <li data-app="notepad"><img src="reference/logos/notepad.svg" alt=""> Notepad</li>
+      <li data-app="browser"><img src="reference/logos/browser.svg" alt=""> Internet</li>
+      <li data-app="executables"><img src="reference/logos/console.svg" alt=""> Executables</li>
+      <li data-app="recycle"><img src="reference/logos/recycle.svg" alt=""> Recycle Bin</li>
+    </ul>
   </div>
 
   <!-- BIOS setup modal (hidden until invoked) -->

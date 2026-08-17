@@ -1,4 +1,4 @@
-/* BIOS + Retro Windows 95 style + taskbar & windows */
+/* BIOS + Retro Windows 95 style + Start menu + taskbar icons */
 :root{
   --bg:#008080; /* teal-ish boot background */
   --panel:#c0c0c0;
@@ -73,12 +73,22 @@ html,body{height:100%;margin:0}
   font-weight:700;
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.8);
 }
-.taskbar-left{margin-right:12px}
+.start-button{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;margin-right:8px;border:1px solid #777;background:#e6e6e6;border-radius:4px;cursor:pointer}
+.start-icon{width:18px;height:18px}
 .taskbar-windows{display:flex;gap:6px;align-items:center}
-.taskbar-btn{background:#e6e6e6;border:1px solid #777;padding:6px 10px;border-radius:3px;cursor:pointer}
+.taskbar-btn{display:inline-flex;align-items:center;background:#e6e6e6;border:1px solid #777;padding:4px 8px;border-radius:3px;cursor:pointer;gap:6px}
 .taskbar-btn.minimized{opacity:0.6}
+.tb-icon{width:16px;height:16px}
+.taskbar-btn .label{max-width:120px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
 
 .desktop-content{padding:32px}
+
+/* Start menu */
+.start-menu{position:fixed;left:8px;bottom:48px;background:#fff;border:1px solid #777;padding:8px;border-radius:4px;box-shadow:2px 4px 12px rgba(0,0,0,0.4)}
+.start-menu ul{list-style:none;margin:0;padding:0}
+.start-menu li{display:flex;gap:8px;align-items:center;padding:6px 8px;cursor:pointer;border-radius:4px}
+.start-menu li img{width:20px;height:20px}
+.start-menu li:hover{background:rgba(0,0,0,0.05)}
 
 /* desktop icons */
 .desktop-icons {
@@ -126,7 +136,8 @@ html,body{height:100%;margin:0}
   cursor:grab;
   user-select:none;
 }
-.titlebar .title { font-weight:700; font-size:13px; color:#000; }
+.titlebar .title { font-weight:700; font-size:13px; color:#000; display:flex;align-items:center;gap:8px}
+.title-icon{width:16px;height:16px}
 .titlebar .controls .btn {
   border:1px solid #666;
   background:#e6e6e6;

@@ -1,4 +1,4 @@
-// Enhanced BIOS + Boot animation + mock OS with executable runner, double-click, taskbar & window controls
+// Enhanced: Start menu, taskbar labels/icons + window controls
 (function(){
   document.addEventListener('DOMContentLoaded', () => {
     const bios = document.getElementById('bios');
@@ -11,6 +11,8 @@
     const taskbarWindows = document.getElementById('taskbar-windows');
     const biosSetup = document.getElementById('bios-setup');
     const bootMenu = document.getElementById('boot-menu');
+    const startButton = document.getElementById('start-button');
+    const startMenu = document.getElementById('start-menu');
 
     // POST messages
     const postMessages = [
@@ -26,7 +28,6 @@
       'Booting from hard disk...'
     ];
 
-    // allow user to press F2/F8 during BIOS to open overlays
     let biosActive = false;
     function runBIOS() {
       biosActive = true;
@@ -48,21 +49,17 @@
         }
       }, 450);
 
-      // temporary key handler while BIOS active
       function onKey(e) {
         if (!biosActive) return;
         if (e.key === 'F2') showBIOSSetup();
         if (e.key === 'F8') showBootMenu();
       }
       document.addEventListener('keydown', onKey);
-      // remove listener after BIOS ends
       setTimeout(()=> document.removeEventListener('keydown', onKey), postMessages.length*450 + 1000);
     }
 
-    // Show BIOS setup modal
     function showBIOSSetup() {
       biosSetup.classList.remove('hidden');
-      // simple handlers
       document.getElementById('bios-save').onclick = () => {
         const device = document.getElementById('setup-boot-device').value;
         bootText.textContent = `Booting from ${device}...`;
@@ -77,9 +74,7 @@
         li.onclick = () => {
           const choice = li.dataset.choice;
           bootMenu.classList.add('hidden');
-          // adjust boot text and continue fast
           bootText.textContent = `Booting from ${choice}...`;
-          // simulate faster boot
           boot.classList.remove('hidden');
           desk.classList.add('hidden');
           fastBoot();
@@ -129,6 +124,24 @@
 
     runBIOS();
 
+    // Start menu toggle
+    startButton.addEventListener('click', (e) => {
+      startMenu.classList.toggle('hidden');
+      e.stopPropagation();
+    });
+    startMenu.addEventListener('click', (e) => {
+      const item = e.target.closest('li[data-app]');
+      if (item) {
+        const app = item.dataset.app;
+        openApp(app);
+        startMenu.classList.add('hidden');
+      }
+    });
+    // close start menu on outside click
+    document.addEventListener('click', (e) => {
+      if (!startMenu.classList.contains('hidden')) startMenu.classList.add('hidden');
+    });
+
     // Desktop icon behavior: single-click selects, double-click opens
     document.querySelectorAll('.desktop-icon').forEach(icon => {
       icon.addEventListener('click', (e) => {
@@ -149,10 +162,10 @@
       if (app === 'executables') openExecutables();
     }
 
-    // Window management with minimize/maximize and taskbar buttons
+    // Window management
     let zIndexCounter = 10;
     let winCounter = 0;
-    function createWindow(title, innerHtml, width = 480, height = 320) {
+    function createWindow(title, innerHtml, width = 480, height = 320, iconPath = 'reference/logos/my_computer.svg') {
       const id = 'win-' + (++winCounter) + '-' + Date.now();
       const win = document.createElement('div');
       win.className = 'os-window';
@@ -165,7 +178,7 @@
 
       win.innerHTML = `
         <div class="titlebar">
-          <div class="title">${title}</div>
+          <div class="title"><img src="${iconPath}" class="title-icon"> ${title}</div>
           <div class="controls">
             <button class="btn min">▁</button>
             <button class="btn max">▢</button>
@@ -179,8 +192,8 @@
       // taskbar button
       const tb = document.createElement('button');
       tb.className = 'taskbar-btn';
-      tb.textContent = title;
       tb.dataset.winId = id;
+      tb.innerHTML = `<img src="${iconPath}" class="tb-icon"><span class="label">${title}</span>`;
       taskbarWindows.appendChild(tb);
 
       // interactions
@@ -202,12 +215,10 @@
       win.querySelector('.btn.max').addEventListener('click', (e)=>{
         const isMax = win.dataset.max === '1';
         if (!isMax) {
-          // save current
           win.dataset._left = win.style.left || '60px';
           win.dataset._top = win.style.top || '60px';
           win.dataset._width = win.style.width;
           win.dataset._height = win.style.height;
-          // fill
           win.style.left = '0px'; win.style.top = '0px'; win.style.width = '100%'; win.style.height = 'calc(100% - 40px)';
           win.dataset.max = '1';
         } else {
@@ -267,13 +278,13 @@
           <button id="open-notepad-from-explorer">Open Notepad</button>
         </div>
       `;
-      const w = createWindow('My Computer', content, 420, 300);
-      w.querySelector('#open-notepad-from-explorer').addEventListener('click', openNotepad);
+      createWindow('My Computer', content, 420, 300, 'reference/logos/my_computer.svg');
+      const w = document.querySelectorAll('.os-window');
     }
 
     function openNotepad() {
       const content = `<textarea style="width:100%;height:calc(100% - 8px);">Welcome to Retro Notepad</textarea>`;
-      createWindow('Notepad', content, 500, 360);
+      createWindow('Notepad', content, 500, 360, 'reference/logos/notepad.svg');
     }
 
     function openBrowser() {
@@ -288,12 +299,12 @@
           </div>
         </div>
       `;
-      createWindow('Internet', content, 640, 420);
+      createWindow('Internet', content, 640, 420, 'reference/logos/browser.svg');
     }
 
     function openRecycle() {
       const content = `<div style="padding:12px"><p>Recycle Bin is empty.</p></div>`;
-      createWindow('Recycle Bin', content, 360, 200);
+      createWindow('Recycle Bin', content, 360, 200, 'reference/logos/recycle.svg');
     }
 
     // Executables: fetch manifest to auto-discover
@@ -302,18 +313,17 @@
         let listHtml = '<div style="padding:8px"><p><strong>Executables</strong></p><ul>';
         list.forEach(name => { listHtml += `<li><button class="run-exe" data-exe="${name}">${name}</button></li>`; });
         listHtml += '</ul><p>Executables are simple text placeholders; running one will show its output.</p></div>';
-        const w = createWindow('Executables', listHtml, 420, 300);
+        const w = createWindow('Executables', listHtml, 420, 300, 'reference/logos/console.svg');
         w.querySelectorAll('.run-exe').forEach(btn => btn.addEventListener('click', (e)=> {
           const exe = e.currentTarget.dataset.exe;
           runExecutable(exe);
         }));
       }).catch(()=>{
-        // fallback to hardcoded
         const sampleExecutables = ['hello_world.exe','cool_app.exe'];
         let listHtml = '<div style="padding:8px"><p><strong>Executables</strong></p><ul>';
         sampleExecutables.forEach(name => { listHtml += `<li><button class="run-exe" data-exe="${name}">${name}</button></li>`; });
         listHtml += '</ul><p>Executables are simple text placeholders; running one will show its output.</p></div>';
-        const w = createWindow('Executables', listHtml, 420, 300);
+        const w = createWindow('Executables', listHtml, 420, 300, 'reference/logos/console.svg');
         w.querySelectorAll('.run-exe').forEach(btn => btn.addEventListener('click', (e)=> {
           const exe = e.currentTarget.dataset.exe;
           runExecutable(exe);
@@ -322,7 +332,7 @@
     }
 
     function runExecutable(filename) {
-      const runner = createWindow(`Running ${filename}`, `<div class="console" id="console-${Date.now()}"></div>`, 560, 360);
+      const runner = createWindow(`Running ${filename}`, `<div class="console" id="console-${Date.now()}"></div>`, 560, 360, 'reference/logos/console.svg');
       const consoleEl = runner.querySelector('.console');
       fetch('reference/executables/' + filename).then(r => {
         if (!r.ok) throw new Error('Executable not found');
