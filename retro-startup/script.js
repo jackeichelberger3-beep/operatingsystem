@@ -1,33 +1,71 @@
-// Boot animation + simple mock OS with clickable desktop icons & windows
+// BIOS + Boot animation + simple mock OS with executable runner
 document.addEventListener('DOMContentLoaded', () => {
-  const bar = document.getElementById('bar');
+  const bios = document.getElementById('bios');
+  const postLog = document.getElementById('post-log');
   const boot = document.getElementById('boot');
+  const bootText = document.getElementById('boot-text');
+  const bar = document.getElementById('bar');
   const desk = document.getElementById('desktop');
   const windowsRoot = document.getElementById('windows');
 
-  // Try to play startup sound if present
-  const audio = new Audio('reference/sounds/startup.wav');
-  audio.addEventListener('error', ()=>{/* no sound found or cannot play */});
+  // BIOS POST messages
+  const postMessages = [
+    'PhoenixBIOS 4.0 Release 6.0',
+    'CPU: Intel(R) i486 Compatible @ 33MHz',
+    'Memory Test: 65536K OK',
+    'Primary Master: ST-506 20MB',
+    'Primary Slave: None',
+    'Detecting PCI devices... done',
+    'Keyboard detected',
+    'System CMOS checksum is OK',
+    'Booting from hard disk...'
+  ];
 
-  // Progress animation timeline
-  let pct = 0;
-  const interval = setInterval(()=>{
-    pct += Math.floor(Math.random()*8) + 3;
-    if (pct > 100) pct = 100;
-    bar.style.width = pct + '%';
-    if (pct === 100) {
-      clearInterval(interval);
-      setTimeout(()=> {
-        boot.classList.add('hidden');
-        desk.classList.remove('hidden');
-        // focus the desktop for keyboard events
-        desk.focus();
-      }, 700);
-    }
-  }, 150);
+  // Show BIOS, then boot screen, then desktop
+  function runBIOS() {
+    bios.classList.remove('hidden');
+    postLog.textContent = '';
+    let idx = 0;
+    const t = setInterval(() => {
+      if (idx < postMessages.length) {
+        postLog.textContent += postMessages[idx] + '\n';
+        postLog.scrollTop = postLog.scrollHeight;
+        idx++;
+      } else {
+        clearInterval(t);
+        // short delay then show boot screen
+        setTimeout(() => {
+          bios.classList.add('hidden');
+          startBoot();
+        }, 900);
+      }
+    }, 500);
+  }
 
-  // Attempt to play sound (may be blocked without user gesture)
-  audio.play().catch(()=>{/* blocked; OK */});
+  // Boot animation
+  function startBoot() {
+    boot.classList.remove('hidden');
+    let pct = 0;
+    const interval = setInterval(()=>{
+      pct += Math.floor(Math.random()*8) + 3;
+      if (pct > 100) pct = 100;
+      bar.style.width = pct + '%';
+      if (pct === 100) {
+        clearInterval(interval);
+        setTimeout(()=> {
+          boot.classList.add('hidden');
+          desk.classList.remove('hidden');
+          desk.focus();
+        }, 700);
+      }
+    }, 120);
+
+    // Attempt to play startup sound if available
+    const audio = new Audio('reference/sounds/startup.wav');
+    audio.play().catch(()=>{});
+  }
+
+  runBIOS();
 
   // Desktop icon handling
   document.body.addEventListener('click', (e) => {
@@ -38,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (app === 'notepad') openNotepad();
     if (app === 'browser') openBrowser();
     if (app === 'recycle') openRecycle();
+    if (app === 'executables') openExecutables();
   });
 
   // Utility to create a draggable window
@@ -47,8 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
     win.className = 'os-window';
     win.style.width = width + 'px';
     win.style.height = height + 'px';
-    win.style.left = '60px';
-    win.style.top = '60px';
+    win.style.left = (60 + Math.floor(Math.random()*40)) + 'px';
+    win.style.top = (60 + Math.floor(Math.random()*40)) + 'px';
     win.style.zIndex = ++zIndexCounter;
 
     win.innerHTML = `
@@ -90,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return win;
   }
 
-  // Example apps
+  // Application implementations
   function openFileExplorer() {
     const content = `
       <div class="explorer">
@@ -130,6 +169,48 @@ document.addEventListener('DOMContentLoaded', () => {
   function openRecycle() {
     const content = `<div style="padding:12px"><p>Recycle Bin is empty.</p></div>`;
     createWindow('Recycle Bin', content, 360, 200);
+  }
+
+  // Executables app: lists .exe placeholders and runs them
+  const sampleExecutables = ['hello_world.exe','cool_app.exe'];
+  function openExecutables() {
+    let listHtml = '<div style="padding:8px"><p><strong>Executables</strong></p><ul>';
+    sampleExecutables.forEach(name => {
+      listHtml += `<li><button class="run-exe" data-exe="${name}">${name}</button></li>`;
+    });
+    listHtml += '</ul><p>Executables are simple text placeholders; running one will show its output.</p></div>';
+    const w = createWindow('Executables', listHtml, 420, 300);
+    w.querySelectorAll('.run-exe').forEach(btn => btn.addEventListener('click', (e)=> {
+      const exe = e.currentTarget.dataset.exe;
+      runExecutable(exe);
+    }));
+  }
+
+  // Executor: fetch .exe text and simulate running in a console window
+  function runExecutable(filename) {
+    const runner = createWindow(`Running ${filename}`, `<div class="console" id="console-${Date.now()}" style="background:#000;color:#0f0;padding:8px;height:100%;overflow:auto;font-family:monospace;font-size:12px"></div>`, 560, 360);
+    const consoleEl = runner.querySelector('.console');
+    fetch('reference/executables/' + filename).then(r => {
+      if (!r.ok) throw new Error('Executable not found');
+      return r.text();
+    }).then(txt => {
+      // simulate streaming output
+      const lines = txt.split(/\r?\n/);
+      let i = 0;
+      const t = setInterval(()=>{
+        if (i < lines.length) {
+          consoleEl.textContent += lines[i] + '\n';
+          consoleEl.scrollTop = consoleEl.scrollHeight;
+          i++;
+        } else {
+          clearInterval(t);
+          consoleEl.textContent += '\n[Process exited with code 0]';
+          consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+      }, 250);
+    }).catch(err => {
+      consoleEl.textContent += 'Error: ' + err.message;
+    });
   }
 
   // Keyboard shortcut: Ctrl+N to open Notepad

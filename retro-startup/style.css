@@ -1,4 +1,4 @@
-/* Retro Windows 95 style */
+/* BIOS + Retro Windows 95 style */
 :root{
   --bg:#008080; /* teal-ish boot background */
   --panel:#c0c0c0;
@@ -7,6 +7,23 @@
 }
 *{box-sizing:border-box;font-family: "MS Sans Serif", Arial, sans-serif}
 html,body{height:100%;margin:0}
+
+/* BIOS */
+.bios-screen{
+  height:100vh;
+  background:#000;
+  color:#0f0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.bios-content{width:80%;max-width:900px;text-align:left}
+.bios-oem{width:220px;display:block;margin-bottom:12px}
+.post-log{background:#000;color:#0f0;padding:12px;border:1px solid #033;font-family:monospace;height:220px;overflow:auto}
+.bios-hint{color:#666;margin-top:8px;font-size:13px}
+
+.boot-screen.hidden, .bios-screen.hidden{display:none}
+
 .boot-screen{
   height:100vh;
   background:linear-gradient(180deg,var(--bg),#005f5f);
@@ -106,6 +123,9 @@ html,body{height:100%;margin:0}
   cursor:pointer;
 }
 .window-content { padding:8px; background:#fff; flex:1; overflow:auto; }
+
+/* console */
+.console { background:#000;color:#0f0;padding:8px;height:100%;overflow:auto;font-family:monospace;font-size:12px }
 
 /* small UX */
 .desktop-content h1, .desktop-content p { color:#fff; text-shadow:0 1px 0 rgba(0,0,0,0.4) }

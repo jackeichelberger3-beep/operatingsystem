@@ -7,9 +7,18 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="boot-screen" id="boot">
+  <!-- BIOS overlay shown first -->
+  <div class="bios-screen" id="bios">
+    <div class="bios-content">
+      <img src="reference/logos/manufacturer_logo.svg" alt="OEM" class="bios-oem">
+      <pre id="post-log" class="post-log"></pre>
+      <div class="bios-hint">Press F2 for Setup &nbsp; F8 for Boot Menu</div>
+    </div>
+  </div>
+
+  <div class="boot-screen hidden" id="boot">
     <img src="reference/logos/win95_logo.svg" alt="Logo" class="logo">
-    <div class="text">Starting Microsoft Windows 95...</div>
+    <div class="text" id="boot-text">Starting Microsoft Windows 95...</div>
     <div class="progress">
       <div class="bar" id="bar"></div>
     </div>
@@ -36,6 +45,11 @@
           <div>Internet</div>
         </div>
 
+        <div class="desktop-icon" data-app="executables" title="Executables">
+          <img src="reference/logos/my_computer.svg" alt="Executables">
+          <div>Executables</div>
+        </div>
+
         <div class="desktop-icon" data-app="recycle" title="Recycle Bin">
           <img src="reference/logos/recycle.svg" alt="Recycle">
           <div>Recycle Bin</div>
@@ -43,7 +57,7 @@
       </div>
 
       <h1>Welcome</h1>
-      <p>Double-click an icon (single click also works) to open the mock OS apps.</p>
+      <p>Double-click an icon (single click also works) to open the mock OS apps. Open Executables to run sample .exe files.</p>
     </div>
 
     <div id="windows"></div>
