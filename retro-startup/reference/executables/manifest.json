@@ -1,4 +1,9 @@
 [
   "hello_world.exe",
-  "cool_app.exe"
+  "cool_app.exe",
+  "sysinfo.exe",
+  "ping.exe",
+  "calc.exe",
+  "dirlist.exe",
+  "echo.exe"
 ]

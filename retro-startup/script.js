@@ -1,4 +1,4 @@
-// Enhanced: Start menu, taskbar labels/icons + window controls
+// BIOS advanced panel + CMOS save/restore + more executables
 (function(){
   document.addEventListener('DOMContentLoaded', () => {
     const bios = document.getElementById('bios');
@@ -10,29 +10,64 @@
     const windowsRoot = document.getElementById('windows');
     const taskbarWindows = document.getElementById('taskbar-windows');
     const biosSetup = document.getElementById('bios-setup');
+    const biosAdvanced = document.getElementById('bios-advanced');
     const bootMenu = document.getElementById('boot-menu');
     const startButton = document.getElementById('start-button');
     const startMenu = document.getElementById('start-menu');
 
-    // POST messages
-    const postMessages = [
-      'PhoenixBIOS 4.0 Release 6.0',
-      'CPU: Intel(R) i486 Compatible @ 33MHz',
-      'Memory Test: 65536K OK',
-      'Primary Master: ST-506 20MB',
-      'Primary Slave: None',
-      'Detecting PCI devices... done',
-      'Keyboard detected',
-      'System CMOS checksum is OK',
-      'Press F2 for Setup, F8 for Boot Menu',
-      'Booting from hard disk...'
-    ];
+    const CMOS_KEY = 'retro_cmos_v1';
 
+    // Default CMOS/settings
+    const DEFAULT_CMOS = {
+      bootDevice: 'Hard Disk',
+      systemDate: '2026-08-17',
+      baseMemoryKB: 65536,
+      enableNetwork: true,
+      enableFloppy: false,
+      enableCdrom: true
+    };
+
+    function loadCMOS(){
+      try{
+        const raw = localStorage.getItem(CMOS_KEY);
+        if (!raw) return Object.assign({}, DEFAULT_CMOS);
+        const parsed = JSON.parse(raw);
+        return Object.assign({}, DEFAULT_CMOS, parsed);
+      }catch(e){ return Object.assign({}, DEFAULT_CMOS); }
+    }
+    function saveCMOS(obj){
+      localStorage.setItem(CMOS_KEY, JSON.stringify(obj));
+    }
+    function clearCMOS(){
+      localStorage.removeItem(CMOS_KEY);
+    }
+
+    // POST messages (will be customized using CMOS)
+    function buildPostMessages(cmos){
+      return [
+        'PhoenixBIOS 4.0 Release 6.0',
+        'CPU: Intel(R) i486 Compatible @ 33MHz',
+        `Memory Test: ${cmos.baseMemoryKB}K OK`,
+        'Primary Master: ST-506 20MB',
+        (cmos.enableFloppy? 'Primary Slave: Floppy Drive detected' : 'Primary Slave: None'),
+        (cmos.enableCdrom? 'CD-ROM Drive: Present' : 'CD-ROM Drive: Not Present'),
+        (cmos.enableNetwork? 'Network Adapter: Initialized' : 'Network Adapter: Disabled'),
+        'Detecting PCI devices... done',
+        'Keyboard detected',
+        'System CMOS checksum is OK',
+        `Booting from ${cmos.bootDevice}...`
+      ];
+    }
+
+    // BIOS flow
     let biosActive = false;
     function runBIOS() {
+      const cmos = loadCMOS();
       biosActive = true;
       bios.classList.remove('hidden');
       postLog.textContent = '';
+      const postMessages = buildPostMessages(cmos);
+
       let idx = 0;
       const t = setInterval(() => {
         if (idx < postMessages.length) {
@@ -58,14 +93,49 @@
       setTimeout(()=> document.removeEventListener('keydown', onKey), postMessages.length*450 + 1000);
     }
 
-    function showBIOSSetup() {
+    // BIOS Setup
+    function showBIOSSetup(){
+      const cmos = loadCMOS();
       biosSetup.classList.remove('hidden');
-      document.getElementById('bios-save').onclick = () => {
-        const device = document.getElementById('setup-boot-device').value;
-        bootText.textContent = `Booting from ${device}...`;
+      document.getElementById('setup-boot-device').value = cmos.bootDevice;
+      document.getElementById('setup-date').value = cmos.systemDate;
+
+      document.getElementById('bios-advanced-btn').onclick = ()=> showAdvanced();
+      document.getElementById('bios-save').onclick = ()=>{
+        const newCmos = loadCMOS();
+        newCmos.bootDevice = document.getElementById('setup-boot-device').value;
+        newCmos.systemDate = document.getElementById('setup-date').value;
+        saveCMOS(newCmos);
         biosSetup.classList.add('hidden');
       };
-      document.getElementById('bios-exit').onclick = () => biosSetup.classList.add('hidden');
+      document.getElementById('bios-restore').onclick = ()=>{
+        clearCMOS();
+        document.getElementById('setup-boot-device').value = DEFAULT_CMOS.bootDevice;
+        document.getElementById('setup-date').value = DEFAULT_CMOS.systemDate;
+      };
+      document.getElementById('bios-exit').onclick = ()=> biosSetup.classList.add('hidden');
+    }
+
+    // Advanced panel
+    function showAdvanced(){
+      const cmos = loadCMOS();
+      biosAdvanced.classList.remove('hidden');
+      document.getElementById('adv-memory').value = cmos.baseMemoryKB;
+      document.getElementById('adv-network').checked = !!cmos.enableNetwork;
+      document.getElementById('adv-floppy').checked = !!cmos.enableFloppy;
+      document.getElementById('adv-cdrom').checked = !!cmos.enableCdrom;
+
+      document.getElementById('adv-save').onclick = ()=>{
+        const cur = loadCMOS();
+        cur.baseMemoryKB = parseInt(document.getElementById('adv-memory').value,10) || cur.baseMemoryKB;
+        cur.enableNetwork = document.getElementById('adv-network').checked;
+        cur.enableFloppy = document.getElementById('adv-floppy').checked;
+        cur.enableCdrom = document.getElementById('adv-cdrom').checked;
+        saveCMOS(cur);
+        biosAdvanced.classList.add('hidden');
+        biosSetup.classList.add('hidden');
+      };
+      document.getElementById('adv-cancel').onclick = ()=> biosAdvanced.classList.add('hidden');
     }
 
     function showBootMenu() {
@@ -137,12 +207,11 @@
         startMenu.classList.add('hidden');
       }
     });
-    // close start menu on outside click
     document.addEventListener('click', (e) => {
       if (!startMenu.classList.contains('hidden')) startMenu.classList.add('hidden');
     });
 
-    // Desktop icon behavior: single-click selects, double-click opens
+    // Desktop icon behavior
     document.querySelectorAll('.desktop-icon').forEach(icon => {
       icon.addEventListener('click', (e) => {
         document.querySelectorAll('.desktop-icon.selected').forEach(s=>s.classList.remove('selected'));
@@ -279,7 +348,6 @@
         </div>
       `;
       createWindow('My Computer', content, 420, 300, 'reference/logos/my_computer.svg');
-      const w = document.querySelectorAll('.os-window');
     }
 
     function openNotepad() {
@@ -319,7 +387,7 @@
           runExecutable(exe);
         }));
       }).catch(()=>{
-        const sampleExecutables = ['hello_world.exe','cool_app.exe'];
+        const sampleExecutables = ['hello_world.exe','cool_app.exe','sysinfo.exe','ping.exe','calc.exe','dirlist.exe','echo.exe'];
         let listHtml = '<div style="padding:8px"><p><strong>Executables</strong></p><ul>';
         sampleExecutables.forEach(name => { listHtml += `<li><button class="run-exe" data-exe="${name}">${name}</button></li>`; });
         listHtml += '</ul><p>Executables are simple text placeholders; running one will show its output.</p></div>';
