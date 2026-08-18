@@ -1,0 +1,31 @@
+Help - RetroOS Executable Help
+------------------------------
+Available commands (simulated):
+
+help.exe
+  Shows this help text.
+
+hello_world.exe
+  Prints a "Hello World" message.
+
+cool_app.exe
+  Simulated application startup messages.
+
+sysinfo.exe
+  Displays system information (CPU, Memory, Drives).
+
+ping.exe [host]
+  Simulates pinging a host. Example: ping.exe example.local
+
+calc.exe [expression]
+  Performs simple calculations. Example: calc.exe "2 + 2"
+
+dirlist.exe [path]
+  Lists a simulated directory. Example: dirlist.exe C:\\
+
+echo.exe [text]
+  Echoes the provided text back.
+
+Notes:
+- These are harmless text-based placeholders. Some accept arguments in their text output to demonstrate interactivity, but the demo primarily streams static file contents.
+- To add a new executable, place a plain-text file in retro-startup/reference/executables/ and add the filename to manifest.json.

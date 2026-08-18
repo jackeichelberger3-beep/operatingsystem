@@ -1,4 +1,4 @@
-// BIOS advanced panel + CMOS save/restore + more executables
+// Add: BIOS advanced boot-order editor, profiles, and help executable support
 (function(){
   document.addEventListener('DOMContentLoaded', () => {
     const bios = document.getElementById('bios');
@@ -16,6 +16,7 @@
     const startMenu = document.getElementById('start-menu');
 
     const CMOS_KEY = 'retro_cmos_v1';
+    const PROFILES_KEY = 'retro_cmos_profiles_v1';
 
     // Default CMOS/settings
     const DEFAULT_CMOS = {
@@ -24,7 +25,8 @@
       baseMemoryKB: 65536,
       enableNetwork: true,
       enableFloppy: false,
-      enableCdrom: true
+      enableCdrom: true,
+      bootOrder: ['Hard Disk','Floppy','CD-ROM','Network']
     };
 
     function loadCMOS(){
@@ -42,7 +44,12 @@
       localStorage.removeItem(CMOS_KEY);
     }
 
-    // POST messages (will be customized using CMOS)
+    // Profiles helpers
+    function loadProfiles(){
+      try{ const raw = localStorage.getItem(PROFILES_KEY); return raw? JSON.parse(raw): {}; }catch(e){ return {}; }
+    }
+    function saveProfiles(profiles){ localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles)); }
+
     function buildPostMessages(cmos){
       return [
         'PhoenixBIOS 4.0 Release 6.0',
@@ -59,11 +66,8 @@
       ];
     }
 
-    // BIOS flow
-    let biosActive = false;
     function runBIOS() {
       const cmos = loadCMOS();
-      biosActive = true;
       bios.classList.remove('hidden');
       postLog.textContent = '';
       const postMessages = buildPostMessages(cmos);
@@ -76,7 +80,6 @@
           idx++;
         } else {
           clearInterval(t);
-          biosActive = false;
           setTimeout(() => {
             bios.classList.add('hidden');
             startBoot();
@@ -85,7 +88,6 @@
       }, 450);
 
       function onKey(e) {
-        if (!biosActive) return;
         if (e.key === 'F2') showBIOSSetup();
         if (e.key === 'F8') showBootMenu();
       }
@@ -93,12 +95,53 @@
       setTimeout(()=> document.removeEventListener('keydown', onKey), postMessages.length*450 + 1000);
     }
 
-    // BIOS Setup
+    // BIOS Setup UI
     function showBIOSSetup(){
       const cmos = loadCMOS();
       biosSetup.classList.remove('hidden');
       document.getElementById('setup-boot-device').value = cmos.bootDevice;
       document.getElementById('setup-date').value = cmos.systemDate;
+
+      const profileSelect = document.getElementById('profile-select');
+      const profileName = document.getElementById('profile-name');
+      // populate profiles
+      const profiles = loadProfiles();
+      profileSelect.innerHTML = '<option value="">(none)</option>' + Object.keys(profiles).map(n=>`<option value="${n}">${n}</option>`).join('');
+
+      document.getElementById('profile-save').onclick = ()=>{
+        const name = profileName.value.trim();
+        if (!name) { alert('Enter a profile name'); return; }
+        const p = loadProfiles();
+        const current = loadCMOS();
+        current.bootDevice = document.getElementById('setup-boot-device').value;
+        current.systemDate = document.getElementById('setup-date').value;
+        p[name] = current;
+        saveProfiles(p);
+        profileSelect.innerHTML = '<option value="">(none)</option>' + Object.keys(p).map(n=>`<option value="${n}">${n}</option>`).join('');
+        profileName.value = '';
+        alert('Profile saved');
+      };
+
+      document.getElementById('profile-delete').onclick = ()=>{
+        const sel = profileSelect.value;
+        if (!sel) { alert('Select a profile to delete'); return; }
+        const p = loadProfiles();
+        delete p[sel];
+        saveProfiles(p);
+        profileSelect.innerHTML = '<option value="">(none)</option>' + Object.keys(p).map(n=>`<option value="${n}">${n}</option>`).join('');
+        alert('Profile deleted');
+      };
+
+      profileSelect.onchange = ()=>{
+        const sel = profileSelect.value;
+        if (!sel) return;
+        const p = loadProfiles();
+        if (p[sel]){
+          const obj = p[sel];
+          document.getElementById('setup-boot-device').value = obj.bootDevice || DEFAULT_CMOS.bootDevice;
+          document.getElementById('setup-date').value = obj.systemDate || DEFAULT_CMOS.systemDate;
+        }
+      };
 
       document.getElementById('bios-advanced-btn').onclick = ()=> showAdvanced();
       document.getElementById('bios-save').onclick = ()=>{
@@ -107,6 +150,7 @@
         newCmos.systemDate = document.getElementById('setup-date').value;
         saveCMOS(newCmos);
         biosSetup.classList.add('hidden');
+        alert('CMOS saved');
       };
       document.getElementById('bios-restore').onclick = ()=>{
         clearCMOS();
@@ -116,7 +160,7 @@
       document.getElementById('bios-exit').onclick = ()=> biosSetup.classList.add('hidden');
     }
 
-    // Advanced panel
+    // Advanced panel with boot order drag/drop
     function showAdvanced(){
       const cmos = loadCMOS();
       biosAdvanced.classList.remove('hidden');
@@ -125,15 +169,40 @@
       document.getElementById('adv-floppy').checked = !!cmos.enableFloppy;
       document.getElementById('adv-cdrom').checked = !!cmos.enableCdrom;
 
+      const bootOrderList = document.getElementById('boot-order-list');
+      bootOrderList.innerHTML = '';
+      (cmos.bootOrder || DEFAULT_CMOS.bootOrder).forEach(dev => {
+        const row = document.createElement('div');
+        row.className = 'boot-order-row';
+        row.innerHTML = `<span class="boot-dev">${dev}</span><div class="boot-order-controls"><button class="up">▲</button><button class="down">▼</button></div>`;
+        bootOrderList.appendChild(row);
+      });
+
+      // wire up up/down
+      bootOrderList.querySelectorAll('.boot-order-row').forEach((r,i,arr)=>{
+        r.querySelector('.up').onclick = ()=>{
+          const idx = Array.from(bootOrderList.children).indexOf(r);
+          if (idx <= 0) return;
+          bootOrderList.insertBefore(r, bootOrderList.children[idx-1]);
+        };
+        r.querySelector('.down').onclick = ()=>{
+          const idx = Array.from(bootOrderList.children).indexOf(r);
+          if (idx >= bootOrderList.children.length-1) return;
+          bootOrderList.insertBefore(bootOrderList.children[idx+1], r);
+        };
+      });
+
       document.getElementById('adv-save').onclick = ()=>{
         const cur = loadCMOS();
         cur.baseMemoryKB = parseInt(document.getElementById('adv-memory').value,10) || cur.baseMemoryKB;
         cur.enableNetwork = document.getElementById('adv-network').checked;
         cur.enableFloppy = document.getElementById('adv-floppy').checked;
         cur.enableCdrom = document.getElementById('adv-cdrom').checked;
+        cur.bootOrder = Array.from(bootOrderList.children).map(r=>r.querySelector('.boot-dev').textContent.trim());
         saveCMOS(cur);
         biosAdvanced.classList.add('hidden');
         biosSetup.classList.add('hidden');
+        alert('Advanced settings saved to CMOS');
       };
       document.getElementById('adv-cancel').onclick = ()=> biosAdvanced.classList.add('hidden');
     }
@@ -387,7 +456,7 @@
           runExecutable(exe);
         }));
       }).catch(()=>{
-        const sampleExecutables = ['hello_world.exe','cool_app.exe','sysinfo.exe','ping.exe','calc.exe','dirlist.exe','echo.exe'];
+        const sampleExecutables = ['hello_world.exe','cool_app.exe','sysinfo.exe','ping.exe','calc.exe','dirlist.exe','echo.exe','help.exe'];
         let listHtml = '<div style="padding:8px"><p><strong>Executables</strong></p><ul>';
         sampleExecutables.forEach(name => { listHtml += `<li><button class="run-exe" data-exe="${name}">${name}</button></li>`; });
         listHtml += '</ul><p>Executables are simple text placeholders; running one will show its output.</p></div>';

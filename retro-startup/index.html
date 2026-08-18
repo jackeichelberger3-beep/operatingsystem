@@ -82,14 +82,23 @@
     <div class="modal-content">
       <h2>BIOS Setup Utility</h2>
       <div class="form-row"><label>Boot Device:</label>
-        <select id="setup-boot-device"><option>Hard Disk</option><option>Floppy</option><option>CD-ROM</option></select>
+        <select id="setup-boot-device"><option>Hard Disk</option><option>Floppy</option><option>CD-ROM</option><option>Network</option></select>
       </div>
       <div class="form-row"><label>System Date:</label><input id="setup-date" value="2026-08-17"></div>
 
-      <div style="margin-top:12px;">
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
         <button id="bios-advanced-btn">Advanced</button>
-        <button id="bios-save">Save CMOS</button>
-        <button id="bios-restore">Restore Defaults</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="bios-save">Save CMOS</button>
+          <button id="bios-restore">Restore Defaults</button>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+          <label for="profile-select">Profiles:</label>
+          <select id="profile-select"></select>
+          <input id="profile-name" placeholder="New profile name" style="width:140px;padding:4px"/>
+          <button id="profile-save">Save Profile</button>
+          <button id="profile-delete">Delete</button>
+        </div>
       </div>
 
       <div class="form-actions"><button id="bios-exit">Exit</button></div>
@@ -104,6 +113,10 @@
       <div class="form-row"><label>Enable Network:</label><input id="adv-network" type="checkbox"></div>
       <div class="form-row"><label>Enable Floppy:</label><input id="adv-floppy" type="checkbox"></div>
       <div class="form-row"><label>Enable CD-ROM:</label><input id="adv-cdrom" type="checkbox"></div>
+
+      <h3>Boot Order</h3>
+      <div id="boot-order-list" class="boot-order-list"></div>
+
       <div class="form-actions">
         <button id="adv-save">Save & Close</button>
         <button id="adv-cancel">Cancel</button>
@@ -119,6 +132,7 @@
         <li class="boot-choice" data-choice="Hard Disk">Hard Disk</li>
         <li class="boot-choice" data-choice="Floppy">Floppy</li>
         <li class="boot-choice" data-choice="CD-ROM">CD-ROM</li>
+        <li class="boot-choice" data-choice="Network">Network</li>
       </ul>
       <div class="form-actions"><button id="bootmenu-cancel">Cancel</button></div>
     </div>
